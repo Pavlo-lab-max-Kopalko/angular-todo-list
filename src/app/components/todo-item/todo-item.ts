@@ -10,14 +10,13 @@ import { FormsModule } from '@angular/forms';
 })
 export class TodoItemComponent {
   @Input({ required: true }) todo!: TodoItem;
-  @Input() isDeleting = false; // стан для лоадера Bulma
+  @Input() isDeleting = false;
   @Input() isEditing = false;
 
   @Output() delete = new EventEmitter<number>();
   @Output() update = new EventEmitter<{ id: number, title?: string, completed?: boolean }>();
   @Output() toggleEdit = new EventEmitter<number | null>();
 
-  // Локальний стан для тексту при редагуванні
   editingTitle = '';
   startTitle = '';
 

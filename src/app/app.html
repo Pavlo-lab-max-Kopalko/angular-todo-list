@@ -22,83 +22,73 @@
       <ul class="todo-list">
 
         @if (tempTodo()) {
-          <div data-cy="Todo" class="todo">
-            <label class="todo__status-label">
-              <input data-cy="TodoStatus" type="checkbox" class="todo__status" disabled>
-            </label>
+        <div data-cy="Todo" class="todo">
+          <label class="todo__status-label">
+            <input data-cy="TodoStatus" type="checkbox" class="todo__status" disabled>
+          </label>
 
-            <span data-cy="TodoTitle" class="todo__title">
-              {{ tempTodo()?.title }}
-            </span>
+          <span data-cy="TodoTitle" class="todo__title">
+            {{ tempTodo()?.title }}
+          </span>
 
-            <button type="button" class="todo__remove" data-cy="TodoDelete">×</button>
+          <button type="button" class="todo__remove" data-cy="TodoDelete">×</button>
 
-            <div data-cy="TodoLoader" class="modal overlay is-active">
-              <div class="modal-background has-background-white-ter"></div>
-              <div class="loader"></div>
-            </div>
+          <div data-cy="TodoLoader" class="modal overlay is-active">
+            <div class="modal-background has-background-white-ter"></div>
+            <div class="loader"></div>
           </div>
+        </div>
         }
 
-        @for (todo of todos(); track todo.id) {
-          <div
-            data-cy="Todo"
-            class="todo"
-            [class.completed]="todo.completed"
-            [class.editing]="editingId() === todo.id"
-          >
-            <label class="todo__status-label">
-              <input
-                data-cy="TodoStatus"
-                type="checkbox"
-                class="todo__status"
-                [checked]="todo.completed"
-                (change)="toggleTodo(todo)"
-              >
-            </label>
+        @for (todo of filteredTodos(); track todo.id) {
+        <div data-cy="Todo" class="todo" [class.completed]="todo.completed" [class.editing]="editingId() === todo.id">
+          <label class="todo__status-label">
+            <input data-cy="TodoStatus" type="checkbox" class="todo__status" [checked]="todo.completed"
+              (change)="toggleTodo(todo)">
+          </label>
 
-            @if (editingId() !== todo.id) {
-              <span
-                data-cy="TodoTitle"
-                class="todo__title"
-                (dblclick)="startEdit(todo)"
-              >
-                {{ todo.title }}
-              </span>
+          @if (editingId() !== todo.id) {
+          <span data-cy="TodoTitle" class="todo__title" (dblclick)="startEdit(todo)">
+            {{ todo.title }}
+          </span>
 
-              <button
-                type="button"
-                class="todo__remove"
-                data-cy="TodoDelete"
-                (click)="removeTodo(todo.id)"
-              >×</button>
-            } @else {
-              <form (submit)="saveEdit(todo); $event.preventDefault()">
-                <input
-                  data-cy="TodoTitleField"
-                  type="text"
-                  class="todo__title-field"
-                  [(ngModel)]="editTitle"
-                  name="editTodoTitle"
-                  (keyup.escape)="cancelEdit()"
-                  (blur)="saveEdit(todo)"
-                  autofocus
-                >
-              </form>
-            }
+          <button type="button" class="todo__remove" data-cy="TodoDelete" (click)="removeTodo(todo.id)">×</button>
+          } @else {
+          <form (submit)="saveEdit(todo); $event.preventDefault()">
+            <input data-cy="TodoTitleField" type="text" class="todo__title-field" [(ngModel)]="editTitle"
+              name="editTodoTitle" (keyup.escape)="cancelEdit()" (blur)="saveEdit(todo)" autofocus>
+          </form>
+          }
 
-            @if (deletedTodoIds().includes(todo.id)) {
-              <div data-cy="TodoLoader" class="modal overlay is-active">
-                <div class="modal-background has-background-white-ter"></div>
-                <div class="loader"></div>
-              </div>
-            }
+          @if (deletedTodoIds().includes(todo.id)) {
+          <div data-cy="TodoLoader" class="modal overlay is-active">
+            <div class="modal-background has-background-white-ter"></div>
+            <div class="loader"></div>
           </div>
+          }
+        </div>
         }
-
       </ul>
     </section>
     }
+
+    <footer class="todoapp__footer">
+      <span class="todo-count" data-cy="TodosCounter">
+        {{ activeCount() }} items left
+      </span>
+
+      <nav class="filter" data-cy="Filter">
+        <a href="#/" class="filter__link" [class.selected]="filter() === 'all'"
+          (click)="filter.set('all'); $event.preventDefault()">All</a>
+
+        <a href="#/active" class="filter__link" [class.selected]="filter() === 'active'"
+          (click)="filter.set('active'); $event.preventDefault()">Active</a>
+
+        <a href="#/completed" class="filter__link" [class.selected]="filter() === 'completed'"
+          (click)="filter.set('completed'); $event.preventDefault()">Completed</a>
+      </nav>
+    </footer>
+
   </div>
 </div>
 

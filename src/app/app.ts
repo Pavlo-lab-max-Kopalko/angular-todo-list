@@ -2,7 +2,7 @@ import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { UserWarningComponent } from './components/user-warning/user-warning';
-import { TodoService, TodoItem } from './todo';
+import { TodoService } from './todo';
 import { forkJoin } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { TodoItemComponent } from "./components/todo-item/todo-item";
@@ -21,15 +21,11 @@ export interface TodoItem {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, UserWarningComponent, TodoItemComponent, FormsModule],
+  imports: [CommonModule, RouterOutlet, UserWarningComponent, FormsModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class AppComponent implements OnInit {
-  toggleHandler() {
-    throw new Error('Method not implemented.');
-  }
-
   private todoService = inject(TodoService);
 
   USER_ID = signal<number>(1);
@@ -44,6 +40,27 @@ export class AppComponent implements OnInit {
   editingId = signal<number | null>(null);
   editTitle = signal<string>('');
   priorityWeight: Record<Priority, number> = { high: 3, medium: 2, low: 1 };
+
+  toggleHandler() {
+    const currentTodos = this.todos();
+    const allCompleted = currentTodos.every(todo => todo.completed);
+    const targetStatus = !allCompleted;
+
+    this.todos.update(all =>
+      all.map(todo => ({ ...todo, completed: targetStatus }))
+    );
+
+    const requests = currentTodos
+      .filter(todo => todo.id <= 200)
+      .map(todo => this.todoService.updateTodo(todo.id, { completed: targetStatus }));
+
+    if (requests.length > 0) {
+      forkJoin(requests).subscribe({
+        next: () => console.log('Всі завдання синхронізовано'),
+        error: () => this.rrorMessage.set('Помилка синхронізації деяких завдань')
+      });
+    }
+  }
 
   startEdit(todo: TodoItem) {
     this.editTitle.set(todo.title);
@@ -120,9 +137,18 @@ export class AppComponent implements OnInit {
     const all = this.todos();
     const currentFilter = this.filter();
 
-    if (currentFilter === 'active') return all.filter(t => !t.completed);
-    if (currentFilter === 'completed') return all.filter(t => t.completed);
-    return all;
+    switch (currentFilter) {
+      case 'active':
+        return all.filter(t => !t.completed);
+      case 'completed':
+        return all.filter(t => t.completed);
+      default:
+        return all;
+    }
+  });
+
+  activeCount = computed(() => {
+    return this.todos().filter(t => !t.completed).length;
   });
 
   loadTodos() {
