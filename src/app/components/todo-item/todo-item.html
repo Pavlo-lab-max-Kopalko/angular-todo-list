@@ -1,0 +1,43 @@
+<div class="todo" [class.completed]="todo.completed">
+  <label class="todo__status-label">
+    <input
+      type="checkbox"
+      class="todo__status"
+      [checked]="todo.completed"
+      (change)="update.emit({ id: todo.id, completed: !todo.completed })"
+    />
+  </label>
+
+  @if (!isEditing) {
+    <span
+      class="todo__title"
+      (dblclick)="onEdit()"
+    >
+      {{ todo.title }}
+    </span>
+
+    <button
+      type="button"
+      class="todo__remove"
+      (click)="delete.emit(todo.id)"
+    >×</button>
+  } @else {
+    <form (submit)="onSave(); $event.preventDefault()">
+      <input
+        type="text"
+        class="todo__title-field"
+        [(ngModel)]="editingTitle"
+        name="editTitle"
+        (keyup)="handleKeyUp($event)"
+        (blur)="onSave()"
+        #editInput
+        autofocus
+      />
+    </form>
+  }
+
+  <div class="modal overlay" [class.is-active]="isDeleting">
+    <div class="modal-background has-background-white-ter"></div>
+    <div class="loader"></div>
+  </div>
+</div>
